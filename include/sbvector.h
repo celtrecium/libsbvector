@@ -71,7 +71,7 @@ SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 
 /* These are unsafe, generic macros. */
-#define sbv_get(sbv, type, index) *((type *)__sbv_get_f (sbv, index))
+#define sbv_get(sbv, type, index) (*((type *)__sbv_get_f (sbv, index)))
 #define sbv_set(sbv, type, index, data)                                       \
   (*((type *)__sbv_set_f (sbv, index)) = data)
 #define sbv_push(sbv, type, data) sbv_set (sbv, type, sbv->length + 1, data)
