@@ -84,7 +84,7 @@ sbv_free (sbvector_t *sbv)
 }
 
 void *
-__sbv_push_f (sbvector_t *sbv)
+__sbv_set_f (sbvector_t *sbv, size_t index)
 {
   if (sbv == NULL)
     return NULL;
@@ -93,22 +93,29 @@ __sbv_push_f (sbvector_t *sbv)
 
   if (sbv->_fixed_capacity == true)
     {
-      if (sbv->length + 1 > sbv->_capacity)
+      if (index > sbv->_capacity)
         {
           sbv->err = SBV_CAPACITY_OVERFLOW;
           
           return NULL;
         }
     }
-  else
+  else if (index > sbv->_capacity)
     {
-      if (sbv_resize (sbv, sbv->length + 1) == EXIT_FAILURE)
+      if (sbv_resize (sbv, index) == EXIT_FAILURE)
         return NULL;
     }
 
-  ++sbv->length;
-  
+  sbv->length = sbv->length < index ? index : sbv->length;
+
   return (char *)sbv->vector + (sbv->length - 1) * sbv->_typesize;
+}
+
+
+inline void *
+__sbv_push_f (sbvector_t *sbv)
+{
+  return __sbv_set_f (sbv, sbv->length + 1);
 }
 
 int

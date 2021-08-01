@@ -65,11 +65,11 @@ SBVECT_API sbvector_t sbvector (size_t datasz, size_t tsize, size_t blocksz,
 
 SBVECT_API int sbv_resize (sbvector_t *sbv, size_t newsize);
 SBVECT_API int sbv_free (sbvector_t *sbv);
-SBVECT_API void *__sbv_push_f (sbvector_t *sbv);
+SBVECT_API inline void *__sbv_push_f (sbvector_t *sbv);
 SBVECT_API int sbv_pop (sbvector_t *sbv);
 SBVECT_API int sbv_clear (sbvector_t *sbv);
 SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
-
+SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 
 /* These are unsafe, generic macros. */
 #define sbv_push(sbv, type, data) (*((type *)__sbv_push_f (sbv)) = data)
@@ -78,21 +78,32 @@ SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 /* This macro is responsible for creating safe push and get functions. */
 /* It can not work with structures */
 #define sbv_define_type(type)                                                 \
-  type sbv_push_##type(sbvector_t *sbv, type data) {                          \
-    type *retdat = __sbv_push_f(sbv);                                         \
+  type sbv_push_##type (sbvector_t *sbv, type data)                           \
+  {                                                                           \
+    type *retdat = __sbv_push_f (sbv);                                        \
                                                                               \
     if (sbv->err != SBV_OK)                                                   \
       return 0;                                                               \
                                                                               \
     return *retdat = data;                                                    \
   }                                                                           \
-  type sbv_get_##type(sbvector_t *sbv, size_t index) {                        \
-    type *retdat = __sbv_get_f(sbv, index);                                   \
+  type sbv_get_##type (sbvector_t *sbv, size_t index)                         \
+  {                                                                           \
+    type *retdat = __sbv_get_f (sbv, index);                                  \
                                                                               \
     if (retdat == NULL)                                                       \
       return 0;                                                               \
                                                                               \
     return *retdat;                                                           \
+  }                                                                           \
+  type sbv_set_##type (sbvector_t *sbv, size_t index, type data)              \
+  {                                                                           \
+    type *retdat = __sbv_set_f (sbv, index);                                  \
+                                                                              \
+    if (sbv->err != SBV_OK)                                                   \
+      return 0;                                                               \
+                                                                              \
+    return *retdat = data;                                                    \
   }
 
 #endif /* SBVECTOR_H */
