@@ -82,7 +82,7 @@ SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 #define sbv_define_type(type)                                                 \
   type sbv_push_##type (sbvector_t *sbv, type data)                           \
   {                                                                           \
-    type *retdat = __sbv_push_f (sbv);                                        \
+    type *retdat = __sbv_set_f (sbv, sbv->length + 1);                        \
                                                                               \
     if (sbv->err != SBV_OK)                                                   \
       return 0;                                                               \
