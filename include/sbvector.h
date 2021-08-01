@@ -74,6 +74,8 @@ SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 /* These are unsafe, generic macros. */
 #define sbv_push(sbv, type, data) (*((type *)__sbv_push_f (sbv)) = data)
 #define sbv_get(sbv, type, index) *((type *)__sbv_get_f (sbv, index))
+#define sbv_set(sbv, type, index, data)                                       \
+  (*((type *)__sbv_set_f (sbv, index)) = data)
 
 /* This macro is responsible for creating safe push and get functions. */
 /* It can not work with structures */
