@@ -20,26 +20,24 @@
 
 #define _get_size(size, block) (((size / block) + !!(size % block)) * block)
 
-sbvector_t *
+sbvector_t
 sbvector (size_t datasz, size_t tsize, size_t blocksz, bool fixcapacity)
 {
-  sbvector_t *vec = NULL;
+  sbvector_t vec = {NULL, 0, 0, 0, 0, false, SBV_ZERO_PARAMS};
 
   if (tsize == 0 || blocksz == 0)
-    return NULL;
-
-  vec = calloc (1, sizeof (sbvector_t));
+    return vec;
   
-  vec->_single_block_size = blocksz;
-  vec->length = 0;
-  vec->_capacity = _get_size (datasz, blocksz);
-  vec->_typesize = tsize;
-  vec->err = SBV_OK;
+  vec._single_block_size = blocksz;
+  vec.length = 0;
+  vec._capacity = _get_size (datasz, blocksz);
+  vec._typesize = tsize;
+  vec.err = SBV_OK;
   
-  if ((vec->vector = calloc (vec->_capacity, tsize)) == NULL)
-    vec->err = SBV_MALLOC_ERR;
+  if ((vec.vector = calloc (vec._capacity, tsize)) == NULL)
+    vec.err = SBV_MALLOC_ERR;
   
-  vec->_fixed_capacity = fixcapacity;
+  vec._fixed_capacity = fixcapacity;
   
   return vec;
 }
@@ -78,9 +76,9 @@ sbv_free (sbvector_t *sbv)
 {
   if (sbv == NULL)
     return EXIT_FAILURE;
-  
+
+  sbv_clear (sbv);
   free (sbv->vector);
-  free (sbv);
   
   return EXIT_SUCCESS;
 }

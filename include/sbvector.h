@@ -45,6 +45,7 @@ typedef enum SBVERR
   SBV_OK,
   SBV_MALLOC_ERR,
   SBV_REALLOC_ERR,
+  SBV_ZERO_PARAMS,
   SBV_CAPACITY_OVERFLOW
 } SBVERR_T;
 
@@ -59,7 +60,7 @@ typedef struct sbvector
   SBVERR_T err;
 } sbvector_t;
 
-SBVECT_API sbvector_t *sbvector (size_t datasz, size_t tsize, size_t blocksz,
+SBVECT_API sbvector_t sbvector (size_t datasz, size_t tsize, size_t blocksz,
                       bool fixcapacity);
 
 SBVECT_API int sbv_resize (sbvector_t *sbv, size_t newsize);
