@@ -76,18 +76,16 @@ SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 
 /* This macro is responsible for creating safe push and get functions. */
 #define sbv_define_type(type)                                                 \
-  type sbv_push_##type (sbvector_t *sbv, type data)                           \
-  {                                                                           \
-    type *retdat = __sbv_push_f (sbv);                                        \
+  type sbv_push_##type(sbvector_t *sbv, type data) {                          \
+    type *retdat = __sbv_push_f(sbv);                                         \
                                                                               \
     if (sbv->err != SBV_OK)                                                   \
       return 0;                                                               \
                                                                               \
     return *retdat = data;                                                    \
   }                                                                           \
-  type sbv_get_##type (sbvector_t *sbv, size_t index)                         \
-  {                                                                           \
-    type *retdat = __sbv_get_f (sbv, index);                                  \
+  type sbv_get_##type(sbvector_t *sbv, size_t index) {                        \
+    type *retdat = __sbv_get_f(sbv, index);                                   \
                                                                               \
     if (retdat == NULL)                                                       \
       return 0;                                                               \

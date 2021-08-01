@@ -25,6 +25,17 @@ main (void)
           sbv_get_int (vect, 0),
           sbv_get_int (vect, 1),
           sbv_get_int (vect, 2));
+
+  sbv_pop (vect);
+  sbv_pop (vect);  
+
+  sbv_push_int (vect, 359);
+  sbv_push_int (vect, 1488);
+
+  printf ("%d %d %d\n",
+          sbv_get_int (vect, 0),
+          sbv_get_int (vect, 1),
+          sbv_get_int (vect, 2));
   
   sbv_free (vect);
   

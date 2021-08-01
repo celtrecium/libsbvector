@@ -52,6 +52,7 @@ sbv_resize (sbvector_t *sbv, size_t newsize)
   if (sbv == NULL)
     return EXIT_FAILURE;
 
+  sbv->err = SBV_OK;
   tmp = sbv->vector;
   
   if (sbv->_capacity / 2 < newsize || sbv->_capacity >= newsize)
@@ -90,6 +91,8 @@ __sbv_push_f (sbvector_t *sbv)
   if (sbv == NULL)
     return NULL;
 
+  sbv->err = SBV_OK;
+
   if (sbv->_fixed_capacity == true)
     {
       if (sbv->length + 1 > sbv->_capacity)
@@ -115,6 +118,8 @@ sbv_pop (sbvector_t *sbv)
 {
   if (sbv == NULL || sbv->length == 0)
     return EXIT_FAILURE;
+
+  sbv->err = SBV_OK;
   
   if (sbv->_fixed_capacity != true)
     {
@@ -133,6 +138,8 @@ __sbv_get_f (sbvector_t *sbv, size_t index)
   if (sbv == NULL || sbv->length <= index)
     return NULL;
 
+  sbv->err = SBV_OK;
+
   return (char *)sbv->vector + index * sbv->_typesize;
 }
 
@@ -141,6 +148,8 @@ sbv_clear (sbvector_t *sbv)
 {
   if (sbv == NULL)
     return EXIT_FAILURE;
+
+  sbv->err = SBV_OK;
   
   if (sbv->_fixed_capacity == true)
     sbv->length = 0;
