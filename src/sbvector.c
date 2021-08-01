@@ -111,13 +111,6 @@ __sbv_set_f (sbvector_t *sbv, size_t index)
   return (char *)sbv->vector + (sbv->length - 1) * sbv->_typesize;
 }
 
-
-inline void *
-__sbv_push_f (sbvector_t *sbv)
-{
-  return __sbv_set_f (sbv, sbv->length + 1);
-}
-
 int
 sbv_pop (sbvector_t *sbv)
 {
