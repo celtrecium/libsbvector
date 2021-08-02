@@ -78,7 +78,8 @@ sbv_free (sbvector_t *sbv)
     return EXIT_FAILURE;
 
   sbv_clear (sbv);
-  free (sbv->vector);
+  if (sbv->vector != NULL)
+    free (sbv->vector);
   
   return EXIT_SUCCESS;
 }
