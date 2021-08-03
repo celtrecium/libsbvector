@@ -79,14 +79,14 @@ SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 /* This macro is responsible for creating safe and comfortable push and get
  * functions. */
 #define sbv_define_type(type, postfix)                                        \
-  type *sbv_push_##postfix (sbvector_t *sbv, type *data)                      \
+  type *sbv_push_##postfix (sbvector_t *sbv, type data)                       \
   {                                                                           \
     type *retdat = __sbv_set_f (sbv, sbv->length + 1);                        \
                                                                               \
     if (sbv->err != SBV_OK)                                                   \
       return NULL;                                                            \
                                                                               \
-    *retdat = *data;                                                          \
+    *retdat = data;                                                           \
                                                                               \
     return retdat;                                                            \
   }                                                                           \
@@ -106,7 +106,7 @@ SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
     if (sbv->err != SBV_OK)                                                   \
       return NULL;                                                            \
                                                                               \
-    *retdat = *data;                                                          \
+    *retdat = data;                                                           \
                                                                               \
     return retdat;                                                            \
   }

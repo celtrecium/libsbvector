@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-sbv_define_type (int)
+sbv_define_type (int, int)
 
 int
 main (void)
