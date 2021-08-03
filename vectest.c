@@ -22,9 +22,9 @@ main (void)
           vect.length);
   
   printf ("%d %d %d\n",
-          sbv_get_int (&vect, 0),
-          sbv_get_int (&vect, 1),
-          sbv_get_int (&vect, 2));
+          *sbv_get_int (&vect, 0),
+          *sbv_get_int (&vect, 1),
+          *sbv_get_int (&vect, 2));
 
   sbv_pop (&vect);
   sbv_pop (&vect);  
@@ -33,10 +33,10 @@ main (void)
   sbv_push_int (&vect, 1488);
 
   printf ("%d %d %d\n",
-          sbv_get_int (&vect, 0),
-          sbv_get_int (&vect, 1),
-          sbv_get_int (&vect, 2));
-  
+          *sbv_get_int (&vect, 0),
+          *sbv_get_int (&vect, 1),
+          *sbv_get_int (&vect, 2));
+
   sbv_free (&vect);
   
   return EXIT_SUCCESS;
