@@ -17,6 +17,7 @@
  */
 
 #include "sbvector.h"
+#include <stdlib.h>
 
 #define _get_size(size, block) (((size / block) + !!(size % block)) * block)
 
@@ -43,7 +44,7 @@ sbvector (size_t datasz, size_t tsize, size_t blocksz, bool fixcapacity)
 }
 
 int
-sbv_resize (sbvector_t *sbv, size_t newsize)
+sbv_resize_capacity (sbvector_t *sbv, size_t newsize)
 {
   void *tmp = NULL;
   
@@ -68,6 +69,17 @@ sbv_resize (sbvector_t *sbv, size_t newsize)
         }
     }
   
+  return EXIT_SUCCESS;
+}
+
+int
+sbv_resize (sbvector_t *sbv, size_t newsize)
+{
+  if (sbv_resize_capacity (sbv, newsize) == EXIT_FAILURE)
+    return EXIT_FAILURE;
+
+  sbv->length = newsize;
+
   return EXIT_SUCCESS;
 }
 
@@ -103,7 +115,7 @@ __sbv_set_f (sbvector_t *sbv, size_t index)
     }
   else if (index > sbv->_capacity)
     {
-      if (sbv_resize (sbv, index) == EXIT_FAILURE)
+      if (sbv_resize_capacity (sbv, index) == EXIT_FAILURE)
         return NULL;
     }
 
@@ -122,7 +134,7 @@ sbv_pop (sbvector_t *sbv)
   
   if (sbv->_fixed_capacity != true)
     {
-      if (sbv_resize (sbv, sbv->length - 1) == EXIT_FAILURE)
+      if (sbv_resize_capacity (sbv, sbv->length - 1) == EXIT_FAILURE)
         return EXIT_FAILURE;
     }
 
@@ -154,7 +166,7 @@ sbv_clear (sbvector_t *sbv)
     sbv->length = 0;
   else
     {
-      if (sbv_resize (sbv, 0) == EXIT_FAILURE)
+      if (sbv_resize_capacity (sbv, 0) == EXIT_FAILURE)
         return EXIT_FAILURE;
     }
 

@@ -63,12 +63,13 @@ typedef struct sbvector
 SBVECT_API sbvector_t sbvector (size_t datasz, size_t tsize, size_t blocksz,
                       bool fixcapacity);
 
-SBVECT_API int sbv_resize (sbvector_t *sbv, size_t newsize);
+SBVECT_API int sbv_resize_capacity (sbvector_t *sbv, size_t newsize);
 SBVECT_API int sbv_free (sbvector_t *sbv);
 SBVECT_API int sbv_pop (sbvector_t *sbv);
 SBVECT_API int sbv_clear (sbvector_t *sbv);
 SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
+SBVECT_API int sbv_resize (sbvector_t *sbv, size_t newsize);
 
 /* These are unsafe, generic macros. */
 #define sbv_get(sbv, type, index) (*((type *)__sbv_get_f (sbv, index)))
