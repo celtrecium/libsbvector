@@ -44,13 +44,13 @@ sbvector (size_t datasz, size_t tsize, size_t blocksz, bool fixcapacity)
   return vec;
 }
 
-int
+bool
 sbv_resize_capacity (sbvector_t *sbv, size_t newsize)
 {
   void *tmp = NULL;
   
   if (sbv == NULL)
-    return EXIT_FAILURE;
+    return false;
 
   sbv->err = SBV_OK;
   tmp = sbv->vector;
@@ -66,35 +66,35 @@ sbv_resize_capacity (sbvector_t *sbv, size_t newsize)
           sbv->vector = tmp;
           sbv->err = SBV_REALLOC_ERR;
 
-          return EXIT_FAILURE;
+          return false;
         }
     }
   
-  return EXIT_SUCCESS;
+  return true;
 }
 
-int
+bool
 sbv_resize (sbvector_t *sbv, size_t newsize)
 {
-  if (sbv_resize_capacity (sbv, newsize) == EXIT_FAILURE)
-    return EXIT_FAILURE;
+  if (sbv_resize_capacity (sbv, newsize) == false)
+    return false;
 
   sbv->length = newsize;
 
-  return EXIT_SUCCESS;
+  return true;
 }
 
-int
+bool
 sbv_free (sbvector_t *sbv)
 {
   if (sbv == NULL)
-    return EXIT_FAILURE;
+    return false;
 
   sbv_clear (sbv);
   if (sbv->vector != NULL)
     free (sbv->vector);
   
-  return EXIT_SUCCESS;
+  return true;
 }
 
 void *
@@ -116,7 +116,7 @@ __sbv_set_f (sbvector_t *sbv, size_t index)
     }
   else if (index > sbv->_capacity)
     {
-      if (sbv_resize_capacity (sbv, index) == EXIT_FAILURE)
+      if (sbv_resize_capacity (sbv, index) == false)
         return NULL;
     }
 
@@ -125,21 +125,21 @@ __sbv_set_f (sbvector_t *sbv, size_t index)
   return (char *)sbv->vector + (sbv->length - 1) * sbv->_typesize;
 }
 
-int
+bool
 sbv_pop (sbvector_t *sbv)
 {
   if (sbv == NULL || sbv->length == 0)
-    return EXIT_FAILURE;
+    return false;
 
   sbv->err = SBV_OK;
   
   if (sbv->_fixed_capacity != true)
     {
-      if (sbv_resize (sbv, sbv->length - 1) == EXIT_FAILURE)
-        return EXIT_FAILURE;
+      if (sbv_resize (sbv, sbv->length - 1) == false)
+        return false;
     }
 
-  return EXIT_SUCCESS;
+  return true;
 }
 
 void *
@@ -153,11 +153,11 @@ __sbv_get_f (sbvector_t *sbv, size_t index)
   return (char *)sbv->vector + index * sbv->_typesize;
 }
 
-int
+bool
 sbv_clear (sbvector_t *sbv)
 {
   if (sbv == NULL)
-    return EXIT_FAILURE;
+    return false;
 
   sbv->err = SBV_OK;
   
@@ -165,22 +165,22 @@ sbv_clear (sbvector_t *sbv)
     sbv->length = 0;
   else
     {
-      if (sbv_resize (sbv, 0) == EXIT_FAILURE)
-        return EXIT_FAILURE;
+      if (sbv_resize (sbv, 0) == false)
+        return false;
     }
 
-  return EXIT_SUCCESS;
+  return true;
 }
 
-int
+bool
 sbv_copy (sbvector_t *dest, sbvector_t *src)
 {
   if (dest == NULL || src == NULL || dest->_typesize != src->_typesize)
-    return EXIT_FAILURE;
+    return false;
 
   sbv_resize (dest, src->length);
 
   memcpy (dest->vector, src->vector, src->length * src->_typesize);
   
-  return EXIT_SUCCESS;
+  return true;
 }
