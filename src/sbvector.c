@@ -18,6 +18,7 @@
 
 #include "sbvector.h"
 #include <stdlib.h>
+#include <string.h>
 
 #define _get_size(size, block) (((size / block) + !!(size % block)) * block)
 
@@ -134,11 +135,9 @@ sbv_pop (sbvector_t *sbv)
   
   if (sbv->_fixed_capacity != true)
     {
-      if (sbv_resize_capacity (sbv, sbv->length - 1) == EXIT_FAILURE)
+      if (sbv_resize (sbv, sbv->length - 1) == EXIT_FAILURE)
         return EXIT_FAILURE;
     }
-
-  --sbv->length;
 
   return EXIT_SUCCESS;
 }
@@ -166,9 +165,26 @@ sbv_clear (sbvector_t *sbv)
     sbv->length = 0;
   else
     {
-      if (sbv_resize_capacity (sbv, 0) == EXIT_FAILURE)
+      if (sbv_resize (sbv, 0) == EXIT_FAILURE)
         return EXIT_FAILURE;
     }
 
+  return EXIT_SUCCESS;
+}
+
+int
+sbv_copy (sbvector_t *dest, sbvector_t *src, size_t n)
+{
+  if (dest == NULL || src == NULL || dest->_typesize != src->_typesize)
+    return EXIT_FAILURE;
+
+  if (n > dest->length)
+    n = dest->length;
+
+  if (n > src->length)
+    n = src->length;
+  
+  memcpy (dest->vector, src->vector, n * src->_typesize);
+  
   return EXIT_SUCCESS;
 }
