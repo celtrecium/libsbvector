@@ -70,7 +70,7 @@ SBVECT_API int sbv_clear (sbvector_t *sbv);
 SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 SBVECT_API int sbv_resize (sbvector_t *sbv, size_t newsize);
-SBVECT_API int sbv_copy (sbvector_t *dest, sbvector_t *src, size_t n);
+SBVECT_API int sbv_copy (sbvector_t *dest, sbvector_t *src);
 
 /* These are unsafe, generic macros. */
 #define sbv_get(sbv, type, index) (*((type *)__sbv_get_f (sbv, index)))

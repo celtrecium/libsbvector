@@ -173,18 +173,14 @@ sbv_clear (sbvector_t *sbv)
 }
 
 int
-sbv_copy (sbvector_t *dest, sbvector_t *src, size_t n)
+sbv_copy (sbvector_t *dest, sbvector_t *src)
 {
   if (dest == NULL || src == NULL || dest->_typesize != src->_typesize)
     return EXIT_FAILURE;
 
-  if (n > dest->length)
-    n = dest->length;
+  sbv_resize (dest, src->length);
 
-  if (n > src->length)
-    n = src->length;
-  
-  memcpy (dest->vector, src->vector, n * src->_typesize);
+  memcpy (dest->vector, src->vector, src->length * src->_typesize);
   
   return EXIT_SUCCESS;
 }
