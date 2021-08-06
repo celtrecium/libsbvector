@@ -53,7 +53,7 @@ sbv_resize (sbvector_t *sbv, size_t newsize)
   sbv->err = SBV_OK;
   tmp = sbv->vector;
   
-  if (sbv->_capacity / 2 < newsize || sbv->_capacity >= newsize)
+  if (sbv->_capacity / 2 < newsize || sbv->_capacity > newsize)
     {
       sbv->_capacity = newsize == 0
                            ? sbv->_single_block_size
