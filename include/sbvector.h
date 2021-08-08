@@ -40,15 +40,6 @@
 # define SBVECT_API
 #endif /* _WIN32 || __CYGWIN__ */
 
-typedef enum SBVERR
-{
-  SBV_OK,
-  SBV_MALLOC_ERR,
-  SBV_REALLOC_ERR,
-  SBV_ZERO_PARAMS,
-  SBV_CAPACITY_OVERFLOW
-} SBVERR_T;
-
 typedef struct sbvector
 {
   void *vector;
@@ -56,13 +47,22 @@ typedef struct sbvector
   size_t _typesize;
   size_t _capacity;
   size_t length;
-  bool _fixed_capacity;
-  SBVERR_T err;
+  bool _is_capacity_fixed;
 } sbvector_t;
 
+typedef struct sbslice
+{
+  void *slice;
+  size_t length;
+  sbvector_t *vector;
+} sbslice_t;
+
+/* Vector interfaces */
 SBVECT_API sbvector_t sbvector (size_t datasz, size_t tsize, size_t blocksz,
                       bool fixcapacity);
-
+SBVECT_API sbvector_t sbvector_from_array (void *array, size_t datasz,
+                                           size_t tsize, size_t blocksz,
+                                           bool fixcapacity);
 SBVECT_API bool sbv_resize_capacity (sbvector_t *sbv, size_t newsize);
 SBVECT_API bool sbv_free (sbvector_t *sbv);
 SBVECT_API bool sbv_pop (sbvector_t *sbv);
@@ -72,11 +72,20 @@ SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 SBVECT_API bool sbv_resize (sbvector_t *sbv, size_t newsize);
 SBVECT_API bool sbv_copy (sbvector_t *dest, sbvector_t *src);
 
+/* Slice interfaces */
+SBVECT_API sbslice_t sbslice (sbvector_t *sbv, size_t begin, size_t end);
+SBVECT_API void *__sbslice_get_f (sbslice_t *sbsl, size_t index);
+SBVECT_API void *__sbslice_set_f (sbslice_t *sbsl, size_t index);
+SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
+
 /* These are unsafe, generic macros. */
 #define sbv_get(sbv, type, index) (*((type *)__sbv_get_f (sbv, index)))
 #define sbv_set(sbv, type, index, data)                                       \
   (*((type *)__sbv_set_f (sbv, index)) = data)
 #define sbv_push(sbv, type, data) sbv_set (sbv, type, (sbv)->length + 1, data)
+#define sbslice_get(sbsl, type, index) (*((type *)__sbslice_get_f (sbsl, index)))
+#define sbslice_set(sbsl, type, index, data)                                  \
+  (sbslice_get (sbsl, type, index) = data)
 
 /* This macro is responsible for creating safe and comfortable push and get
  * functions. */
@@ -85,7 +94,7 @@ SBVECT_API bool sbv_copy (sbvector_t *dest, sbvector_t *src);
   {                                                                           \
     type *retdat = __sbv_set_f (sbv, sbv->length + 1);                        \
                                                                               \
-    if (sbv->err != SBV_OK)                                                   \
+    if (!retdat)                                                              \
       return NULL;                                                            \
                                                                               \
     *retdat = data;                                                           \
@@ -96,7 +105,7 @@ SBVECT_API bool sbv_copy (sbvector_t *dest, sbvector_t *src);
   {                                                                           \
     type *retdat = __sbv_get_f (sbv, index);                                  \
                                                                               \
-    if (retdat == NULL)                                                       \
+    if (!retdat)                                                              \
       return 0;                                                               \
                                                                               \
     return retdat;                                                            \
@@ -105,7 +114,27 @@ SBVECT_API bool sbv_copy (sbvector_t *dest, sbvector_t *src);
   {                                                                           \
     type *retdat = __sbv_set_f (sbv, index);                                  \
                                                                               \
-    if (sbv->err != SBV_OK)                                                   \
+    if (!retdat)                                                              \
+      return NULL;                                                            \
+                                                                              \
+    *retdat = data;                                                           \
+                                                                              \
+    return retdat;                                                            \
+  }                                                                           \
+  type *sbslice_get_##postfix (sbslice_t *sbsl, size_t index)                 \
+  {                                                                           \
+    type *retdat = __sbslice_get_f (sbsl, index);                             \
+                                                                              \
+    if (!retdat)                                                              \
+      return 0;                                                               \
+                                                                              \
+    return retdat;                                                            \
+  }                                                                           \
+  type *sbslice_set_##postfix (sbslice_t *sbsl, size_t index, type data)      \
+  {                                                                           \
+    type *retdat = __sbslice_get_f (sbsl, index);                             \
+                                                                              \
+    if (!retdat)                                                              \
       return NULL;                                                            \
                                                                               \
     *retdat = data;                                                           \
