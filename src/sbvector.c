@@ -59,52 +59,52 @@ _realloc_s (void **ptr, size_t size)
 }
 
 sbvector_t
-sbvector (size_t tsize)
+sbvector (size_t type_size)
 {
   sbvector_t vec = {
     NULL,                /* vector */
     SBV_DEFAULT_BLOCKSZ, /* _single_block_size */
-    tsize,               /* _typesize */
+    type_size,           /* _type_size */
     SBV_DEFAULT_BLOCKSZ, /* _capacity */
     0                    /* length */
   };
 
-  if (tsize)
-    vec.vector = calloc (vec._capacity, tsize * vec._capacity);
+  if (type_size)
+    vec.vector = calloc (vec._capacity, type_size * vec._capacity);
   
   return vec;
 }
 
 sbvector_t
-sbvector_from_array (const void *array, size_t arrsz, size_t tsize)
+sbvector_from_array (const void *array, size_t array_size, size_t type_size)
 {
-  sbvector_t vect = sbvector (tsize);
+  sbvector_t vect = sbvector (type_size);
 
   if (array)
     {
-      sbv_resize (&vect, arrsz);
-      memcpy (vect.vector, array, tsize * arrsz);
+      sbv_resize (&vect, array_size);
+      memcpy (vect.vector, array, type_size * array_size);
     }
 
   return vect;
 }
 
 bool
-sbv_resize (sbvector_t *sbv, size_t newsize)
+sbv_resize (sbvector_t *sbv, size_t new_size)
 {
   if (!sbv)
     return false;
 
-  if (sbv->_capacity < newsize)
+  if (sbv->_capacity < new_size)
     {
-      sbv->_capacity = !newsize ? sbv->_block_size
-                                : _get_size (newsize, sbv->_block_size);
+      sbv->_capacity = !new_size ? sbv->_block_size
+                                : _get_size (new_size, sbv->_block_size);
       
-      if (!_realloc_s (&sbv->vector, sbv->_capacity * sbv->_typesize))
+      if (!_realloc_s (&sbv->vector, sbv->_capacity * sbv->_type_size))
         return false;
     }
   
-  sbv->length = newsize;
+  sbv->length = new_size;
 
   return true;
 }
@@ -132,7 +132,7 @@ __sbv_set_f (sbvector_t *sbv, size_t index)
   if (index > sbv->length)
     sbv_resize (sbv, index);
 
-  return _get_element (sbv->vector, sbv->_typesize, index);
+  return _get_element (sbv->vector, sbv->_type_size, index);
 }
 
 bool
@@ -153,7 +153,7 @@ __sbv_get_f (sbvector_t *sbv, size_t index)
   if (!sbv || sbv->length <= index)
     return NULL;
 
-  return _get_element (sbv->vector, sbv->_typesize, index);
+  return _get_element (sbv->vector, sbv->_type_size, index);
 }
 
 bool
@@ -170,11 +170,11 @@ sbv_clear (sbvector_t *sbv)
 bool
 sbv_copy (sbvector_t *dest, sbvector_t *src)
 {
-  if (!dest || !src || dest->_typesize != src->_typesize)
+  if (!dest || !src || dest->_type_size != src->_type_size)
     return false;
 
   sbv_resize (dest, src->length);
-  memcpy (dest->vector, src->vector, src->length * src->_typesize);
+  memcpy (dest->vector, src->vector, src->length * src->_type_size);
   
   return true;
 }
@@ -191,7 +191,7 @@ sbv_crop_capacity (sbvector_t *sbv)
 
   if (tmpsz != sbv->_capacity)
     {
-      if (!_realloc_s(&sbv->vector, tmpsz * sbv->_typesize))
+      if (!_realloc_s(&sbv->vector, tmpsz * sbv->_type_size))
         return false;
 
       sbv->_capacity = tmpsz;
@@ -201,19 +201,19 @@ sbv_crop_capacity (sbvector_t *sbv)
 }
 
 bool
-sbv_set_blocksize (sbvector_t *sbv, size_t newblksz)
+sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size)
 {
   size_t tmpsz = 0;
   
-  if (!sbv || !newblksz)
+  if (!sbv || !new_block_size)
     return false;
 
-  sbv->_block_size = newblksz;
-  tmpsz = _get_size (sbv->length, newblksz);
+  sbv->_block_size = new_block_size;
+  tmpsz = _get_size (sbv->length, new_block_size);
   
   if (tmpsz > sbv->_capacity)
     {
-      if (!_realloc_s (&sbv->vector, tmpsz * sbv->_typesize))
+      if (!_realloc_s (&sbv->vector, tmpsz * sbv->_type_size))
         return false;
 
       sbv->_capacity = tmpsz;
@@ -249,12 +249,12 @@ __sbslice_get_f (sbslice_t *sbsl, size_t index)
   if (!sbsl || sbsl->length <= index)
     return NULL;
 
-  return _get_element (sbsl->slice, sbsl->vector->_typesize, index);
+  return _get_element (sbsl->slice, sbsl->vector->_type_size, index);
 }
 
 sbvector_t
 sbv_copy_slice (sbslice_t *sbsl)
 {
   return sbvector_from_array (sbsl->slice, sbsl->length,
-                              sbsl->vector->_typesize);
+                              sbsl->vector->_type_size);
 }

@@ -47,7 +47,7 @@ typedef struct sbvector
 {
   void *vector;
   size_t _block_size;
-  size_t _typesize;
+  size_t _type_size;
   size_t _capacity;
   size_t length;
 } sbvector_t;
@@ -61,12 +61,12 @@ typedef struct sbslice
 
 /* ------------------------- Vector interfaces ----------------------------- */
 
-/* Create vector (this function takes size of using type). */
-SBVECT_API sbvector_t sbvector (size_t tsize);
+/* Create vector. */
+SBVECT_API sbvector_t sbvector (size_t typesize);
 
-/* Create vector from array with datasz size and tsize type size. */
-SBVECT_API sbvector_t sbvector_from_array (const void *array, size_t datasz,
-                                           size_t tsize);
+/* Create vector from array. */
+SBVECT_API sbvector_t sbvector_from_array (const void *array, size_t array_size,
+                                           size_t type_size);
 
 /* Free vector.
  * Attention: if the vector contains pointers to the allocated memory, you need
@@ -95,7 +95,7 @@ SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
 
 /* Set new vector size */
-SBVECT_API bool sbv_resize (sbvector_t *sbv, size_t newsize);
+SBVECT_API bool sbv_resize (sbvector_t *sbv, size_t new_size);
 
 /* Copy src vector to dest vector. If the sizes of the types of vectors do not
  * match, then copying is impossible.
@@ -109,7 +109,7 @@ SBVECT_API bool sbv_crop_capacity (sbvector_t *sbv);
  * overflows.
  * By default it equals 20 (SBV_DEFAILT_BLOCKSZ macro).
  */
-SBVECT_API bool sbv_set_blocksize (sbvector_t *sbv, size_t newblksz);
+SBVECT_API bool sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size);
 
 /* -------------------------- Slice interfaces ----------------------------- */
 
@@ -119,7 +119,7 @@ SBVECT_API sbslice_t sbslice (sbvector_t *sbv, size_t begin, size_t end);
 /* Internal function for getting a void pointer to an element by index. */
 SBVECT_API void *__sbslice_get_f (sbslice_t *sbsl, size_t index);
 
-/* Create vector from slice of another vector. */
+/* Create a new vector and copy a slice of another vector into it */
 SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
 
 /* --------------------------------- Macros -------------------------------- */
@@ -129,7 +129,8 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
 #define sbv_set(sbv, type, index, data)                                       \
   (*((type *)__sbv_set_f (sbv, index)) = data)
 #define sbv_push(sbv, type, data) sbv_set (sbv, type, (sbv)->length + 1, data)
-#define sbslice_get(sbsl, type, index) (*((type *)__sbslice_get_f (sbsl, index)))
+#define sbslice_get(sbsl, type, index)                                        \
+  (*((type *)__sbslice_get_f (sbsl, index)))
 #define sbslice_set(sbsl, type, index, data)                                  \
   (sbslice_get (sbsl, type, index) = data)
 
