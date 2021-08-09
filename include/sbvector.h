@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 # if defined(_MSC_VER)
@@ -40,14 +41,15 @@
 # define SBVECT_API
 #endif /* _WIN32 || __CYGWIN__ */
 
+#define SBV_DEFAULT_BLOCKSZ 20
+
 typedef struct sbvector
 {
   void *vector;
-  size_t _single_block_size;
+  size_t _block_size;
   size_t _typesize;
   size_t _capacity;
   size_t length;
-  bool _is_capacity_fixed;
 } sbvector_t;
 
 typedef struct sbslice
@@ -57,26 +59,70 @@ typedef struct sbslice
   sbvector_t *vector;
 } sbslice_t;
 
-/* Vector interfaces */
-SBVECT_API sbvector_t sbvector (size_t datasz, size_t tsize, size_t blocksz,
-                      bool fixcapacity);
-SBVECT_API sbvector_t sbvector_from_array (void *array, size_t datasz,
-                                           size_t tsize, size_t blocksz,
-                                           bool fixcapacity);
-SBVECT_API bool sbv_resize_capacity (sbvector_t *sbv, size_t newsize);
+/* ------------------------- Vector interfaces ----------------------------- */
+
+/* Create vector (this function takes size of using type). */
+SBVECT_API sbvector_t sbvector (size_t tsize);
+
+/* Create vector from array with datasz size and tsize type size. */
+SBVECT_API sbvector_t sbvector_from_array (const void *array, size_t datasz,
+                                           size_t tsize);
+
+/* Free vector.
+ * Attention: if the vector contains pointers to the allocated memory, you need
+ * to free them yourself.
+ */
 SBVECT_API bool sbv_free (sbvector_t *sbv);
+
+/* Pop one element from back of vector.
+ * Attention: if the element contains a pointer to the allocated memory, you
+ * need to free it yourself.
+ */
 SBVECT_API bool sbv_pop (sbvector_t *sbv);
+
+/* Clear vector.
+ * Attention: if the vector contains pointers to the allocated memory, you need
+ * to free them yourself.
+ */
 SBVECT_API bool sbv_clear (sbvector_t *sbv);
+
+/* Internal function for getting a void pointer to an element by index. */
 SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
+
+/* Internal function to get a void pointer to the element at index to assign a
+ * value. If the index exceeds the size of the vector, it will expand.
+ */
 SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
+
+/* Set new vector size */
 SBVECT_API bool sbv_resize (sbvector_t *sbv, size_t newsize);
+
+/* Copy src vector to dest vector. If the sizes of the types of vectors do not
+ * match, then copying is impossible.
+ */
 SBVECT_API bool sbv_copy (sbvector_t *dest, sbvector_t *src);
 
-/* Slice interfaces */
+/* Crop the vector's capacity if it is too large. */
+SBVECT_API bool sbv_crop_capacity (sbvector_t *sbv);
+
+/* Set the number of elements by which the capacity will be expanded when it
+ * overflows.
+ * By default it equals 20 (SBV_DEFAILT_BLOCKSZ macro).
+ */
+SBVECT_API bool sbv_set_blocksize (sbvector_t *sbv, size_t newblksz);
+
+/* -------------------------- Slice interfaces ----------------------------- */
+
+/* Slice vector. */
 SBVECT_API sbslice_t sbslice (sbvector_t *sbv, size_t begin, size_t end);
+
+/* Internal function for getting a void pointer to an element by index. */
 SBVECT_API void *__sbslice_get_f (sbslice_t *sbsl, size_t index);
-SBVECT_API void *__sbslice_set_f (sbslice_t *sbsl, size_t index);
+
+/* Create vector from slice of another vector. */
 SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
+
+/* --------------------------------- Macros -------------------------------- */
 
 /* These are unsafe, generic macros. */
 #define sbv_get(sbv, type, index) (*((type *)__sbv_get_f (sbv, index)))
@@ -87,8 +133,8 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
 #define sbslice_set(sbsl, type, index, data)                                  \
   (sbslice_get (sbsl, type, index) = data)
 
-/* This macro is responsible for creating safe and comfortable push and get
- * functions. */
+/* This macro creates functions for working with a vector and a certain data
+ * type. It is safe to use. */
 #define sbv_define_type(type, postfix)                                        \
   type *sbv_push_##postfix (sbvector_t *sbv, type data)                       \
   {                                                                           \
@@ -106,7 +152,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
     type *retdat = __sbv_get_f (sbv, index);                                  \
                                                                               \
     if (!retdat)                                                              \
-      return 0;                                                               \
+      return NULL;                                                            \
                                                                               \
     return retdat;                                                            \
   }                                                                           \
@@ -126,7 +172,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
     type *retdat = __sbslice_get_f (sbsl, index);                             \
                                                                               \
     if (!retdat)                                                              \
-      return 0;                                                               \
+      return NULL;                                                            \
                                                                               \
     return retdat;                                                            \
   }                                                                           \

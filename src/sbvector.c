@@ -16,13 +16,16 @@
  * <https://www.gnu.org/licenses/>.
  */
 
-#include "../include/sbvector.h"
+#include "sbvector.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define _get_size(size, block)                                                \
-  (((size / block) + (size % block ? 1 : 0)) * block)
+  
+static inline size_t
+_get_size (size_t size, size_t block)
+{
+  return (size / block + (size % block ? 1 : 0)) * block;
+}
 
 static inline void
 _swap_size_t (size_t *x, size_t *y)
@@ -38,74 +41,69 @@ _get_element (void *vdptr, size_t tpsz, size_t ind)
   return (char *)vdptr + ind * tpsz;
 }
 
-sbvector_t
-sbvector (size_t datasz, size_t tsize, size_t blocksz, bool fixcapacity)
+static bool
+_realloc_s (void **ptr, size_t size)
 {
-  sbvector_t vec = { NULL, 0, 0, 0, 0, false };
+  void *tmp = *ptr;
 
-  if (tsize == 0 || blocksz == 0)
-    return vec;
-  
-  vec._single_block_size = blocksz;
-  vec.length = 0;
-  vec._capacity = _get_size (datasz, blocksz);
-  vec._typesize = tsize;
-  vec.vector = calloc (vec._capacity, tsize);
-  vec._is_capacity_fixed = fixcapacity;
+  *ptr = realloc (*ptr, size);
+
+  if (!*ptr)
+    {
+      *ptr = tmp;
+      
+      return false;
+    }
+
+  return true;
+}
+
+sbvector_t
+sbvector (size_t tsize)
+{
+  sbvector_t vec = {
+    NULL,                /* vector */
+    SBV_DEFAULT_BLOCKSZ, /* _single_block_size */
+    tsize,               /* _typesize */
+    SBV_DEFAULT_BLOCKSZ, /* _capacity */
+    0                    /* length */
+  };
+
+  if (tsize)
+    vec.vector = calloc (vec._capacity, tsize * vec._capacity);
   
   return vec;
 }
 
 sbvector_t
-sbvector_from_array (void *array, size_t arrsz, size_t tsize, size_t blocksz,
-                     bool fixcapacity)
+sbvector_from_array (const void *array, size_t arrsz, size_t tsize)
 {
-  sbvector_t vect = sbvector (arrsz, tsize, blocksz, fixcapacity);
+  sbvector_t vect = sbvector (tsize);
 
-  vect.length = arrsz;
-  memcpy (vect.vector, array, tsize * arrsz);
+  if (array)
+    {
+      sbv_resize (&vect, arrsz);
+      memcpy (vect.vector, array, tsize * arrsz);
+    }
 
   return vect;
-}
-
-
-bool
-sbv_resize_capacity (sbvector_t *sbv, size_t newsize)
-{
-  void *tmp = NULL;
-  
-  if (!sbv)
-    return false;
-
-  tmp = sbv->vector;
-  
-  if (sbv->_capacity / 2 < newsize || sbv->_capacity > newsize)
-    {
-      sbv->_capacity = newsize == 0
-                           ? sbv->_single_block_size
-                           : _get_size (newsize, sbv->_single_block_size);
-
-      tmp = sbv->vector;
-      
-      sbv->vector = realloc (sbv->vector, sbv->_capacity);
-
-      if (!sbv->vector)
-        {
-          sbv->vector = tmp;
-
-          return false;
-        }
-    }
-  
-  return true;
 }
 
 bool
 sbv_resize (sbvector_t *sbv, size_t newsize)
 {
-  if (!sbv_resize_capacity (sbv, newsize))
+  if (!sbv)
     return false;
 
+  if (sbv->_capacity < newsize)
+    {
+      sbv->_capacity = !newsize ? sbv->_block_size
+                                : _get_size (newsize, sbv->_block_size);
+      
+      if (!_realloc_s (&sbv->vector, sbv->_capacity * sbv->_typesize))
+        return false;
+    }
+  
   sbv->length = newsize;
 
   return true;
@@ -114,11 +112,12 @@ sbv_resize (sbvector_t *sbv, size_t newsize)
 bool
 sbv_free (sbvector_t *sbv)
 {
-  if (sbv == NULL)
+  if (!sbv)
     return false;
 
   sbv_clear (sbv);
-  if (sbv->vector != NULL)
+  
+  if (sbv->vector)
     free (sbv->vector);
   
   return true;
@@ -130,33 +129,20 @@ __sbv_set_f (sbvector_t *sbv, size_t index)
   if (!sbv)
     return NULL;
 
-  if (!sbv->_is_capacity_fixed)
-    {
-      if (index > sbv->_capacity)
-        return NULL;
-    }
-  else if (index > sbv->_capacity)
-    {
-      if (!sbv_resize_capacity (sbv, index))
-        return NULL;
-    }
+  if (index > sbv->length)
+    sbv_resize (sbv, index);
 
-  sbv->length = sbv->length < index ? index : sbv->length;
-
-  return (char *)sbv->vector + (sbv->length - 1) * sbv->_typesize;
+  return _get_element (sbv->vector, sbv->_typesize, index);
 }
 
 bool
 sbv_pop (sbvector_t *sbv)
 {
-  if (!sbv || sbv->length == 0)
+  if (!sbv || !sbv->length)
     return false;
 
-  if (!sbv->_is_capacity_fixed)
-    {
-      if (!sbv_resize (sbv, sbv->length - 1))
-        return false;
-    }
+  if (!sbv_resize (sbv, sbv->length - 1))
+    return false;
 
   return true;
 }
@@ -176,13 +162,7 @@ sbv_clear (sbvector_t *sbv)
   if (!sbv)
     return false;
 
-  if (sbv->_is_capacity_fixed)
-    sbv->length = 0;
-  else
-    {
-      if (!sbv_resize (sbv, 0))
-        return false;
-    }
+  sbv->length = 0;
 
   return true;
 }
@@ -194,8 +174,50 @@ sbv_copy (sbvector_t *dest, sbvector_t *src)
     return false;
 
   sbv_resize (dest, src->length);
-
   memcpy (dest->vector, src->vector, src->length * src->_typesize);
+  
+  return true;
+}
+
+bool
+sbv_crop_capacity (sbvector_t *sbv)
+{
+  size_t tmpsz = 0;
+
+  if (!sbv)
+    return false;
+
+  tmpsz = _get_size (sbv->length, sbv->_block_size);
+
+  if (tmpsz != sbv->_capacity)
+    {
+      if (!_realloc_s(&sbv->vector, tmpsz * sbv->_typesize))
+        return false;
+
+      sbv->_capacity = tmpsz;
+    }
+  
+  return true;
+}
+
+bool
+sbv_set_blocksize (sbvector_t *sbv, size_t newblksz)
+{
+  size_t tmpsz = 0;
+  
+  if (!sbv || !newblksz)
+    return false;
+
+  sbv->_block_size = newblksz;
+  tmpsz = _get_size (sbv->length, newblksz);
+  
+  if (tmpsz > sbv->_capacity)
+    {
+      if (!_realloc_s (&sbv->vector, tmpsz * sbv->_typesize))
+        return false;
+
+      sbv->_capacity = tmpsz;
+    }
   
   return true;
 }
@@ -203,7 +225,7 @@ sbv_copy (sbvector_t *dest, sbvector_t *src)
 sbslice_t
 sbslice (sbvector_t *sbv, size_t begin, size_t end)
 {
-  sbslice_t slice = { NULL, 0, 0 };
+  sbslice_t slice = { sbv, 0, 0 };
 
   if (!sbv)
     return slice;
@@ -214,9 +236,9 @@ sbslice (sbvector_t *sbv, size_t begin, size_t end)
   if (begin >= sbv->length)
     return slice;
 
-  slice.vector = sbv;
   slice.slice = __sbv_get_f (sbv, begin);
   slice.length = end > sbv->length ? sbv->length - begin : end - begin;
+  slice.vector = sbv;
   
   return slice;
 }
@@ -227,13 +249,12 @@ __sbslice_get_f (sbslice_t *sbsl, size_t index)
   if (!sbsl || sbsl->length <= index)
     return NULL;
 
-  return _get_element(sbsl->slice, sbsl->vector->_typesize, index);
+  return _get_element (sbsl->slice, sbsl->vector->_typesize, index);
 }
 
 sbvector_t
 sbv_copy_slice (sbslice_t *sbsl)
 {
-  return sbvector_from_array (
-      sbsl->slice, sbsl->length, sbsl->vector->_typesize,
-      sbsl->vector->_single_block_size, sbsl->vector->_is_capacity_fixed);
+  return sbvector_from_array (sbsl->slice, sbsl->length,
+                              sbsl->vector->_typesize);
 }

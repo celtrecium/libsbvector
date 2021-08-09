@@ -1,5 +1,4 @@
 #include <sbvector.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 sbv_define_type (int, int)
@@ -7,37 +6,27 @@ sbv_define_type (int, int)
 int
 main (void)
 {
-  sbvector_t vect = sbvector (3, sizeof (int), 10, true);
-  
-  sbv_push_int (&vect, 94);
-  sbv_push_int (&vect, 115);
-  sbv_push_int (&vect, 927);
-  
-  printf ("_typesize = %lu\n"
-          "_capacity = %lu\n"
-          "length = %lu\n"
-          "---------------\n",
-          vect._typesize,
-          vect._capacity,
-          vect.length);
-  
-  printf ("%d %d %d\n",
-          *sbv_get_int (&vect, 0),
-          *sbv_get_int (&vect, 1),
-          *sbv_get_int (&vect, 2));
+  const int array[] = { 1, 2, 3, 4, 5, 6, 7 };
+  sbvector_t vect = sbvector_from_array (array, 7, sizeof (int));
 
-  sbv_pop (&vect);
-  sbv_pop (&vect);  
+  sbslice_t slice = sbslice (&vect, 2, 5);
+  size_t i;
 
-  sbv_push_int (&vect, 359);
-  sbv_push_int (&vect, 1488);
+  /* Print numbers from vector */
+  fputs ("Vector:\n", stdout);
+  
+  for (i = 0; i < vect.length; ++i)
+    printf ("%d ", *sbv_get_int (&vect, i));
 
-  printf ("%d %d %d\n",
-          *sbv_get_int (&vect, 0),
-          *sbv_get_int (&vect, 1),
-          *sbv_get_int (&vect, 2));
+  /* Print numbers from slice of vector */
+  fputs ("\nVector[2:5]:\n", stdout);
+
+  for (i = 0; i < slice.length; ++i)
+    printf ("%d ", *sbslice_get_int (&slice, i));
+
+  putchar ('\n');
 
   sbv_free (&vect);
-  
+
   return EXIT_SUCCESS;
 }
