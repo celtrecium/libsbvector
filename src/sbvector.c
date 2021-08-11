@@ -222,6 +222,24 @@ sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size)
   return true;
 }
 
+bool
+__sbv_fill_f (sbvector_t *sbv, void *data, size_t num)
+{
+  size_t i;
+  char *ptr = NULL;
+
+  if (!sbv || !data || num > sbv->length)
+    return false;
+
+  for (i = 0; i < num; ++i)
+    {
+      memcpy (sbv->vector, data, sbv->_type_size);
+      ptr += sbv->_type_size;
+    }
+  
+  return true;
+}
+
 sbslice_t
 sbslice (sbvector_t *sbv, size_t begin, size_t end)
 {
