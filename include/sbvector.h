@@ -142,7 +142,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
 /* This macro creates functions for working with a vector and a certain data
  * type. It is safe to use. */
 #define sbv_define_type(type, postfix)                                        \
-  type *sbv_push_##postfix (sbvector_t *sbv, type data)                       \
+  static type *sbv_push_##postfix (sbvector_t *sbv, type data)                \
   {                                                                           \
     type *retdat = __sbv_set_f (sbv, sbv->length + 1);                        \
                                                                               \
@@ -153,7 +153,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
                                                                               \
     return retdat;                                                            \
   }                                                                           \
-  type *sbv_get_##postfix (sbvector_t *sbv, size_t index)                     \
+  static type *sbv_get_##postfix (sbvector_t *sbv, size_t index)              \
   {                                                                           \
     type *retdat = __sbv_get_f (sbv, index);                                  \
                                                                               \
@@ -162,7 +162,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
                                                                               \
     return retdat;                                                            \
   }                                                                           \
-  type *sbv_set_##postfix (sbvector_t *sbv, size_t index, type data)          \
+  static type *sbv_set_##postfix (sbvector_t *sbv, size_t index, type data)   \
   {                                                                           \
     type *retdat = __sbv_set_f (sbv, index);                                  \
                                                                               \
@@ -173,7 +173,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
                                                                               \
     return retdat;                                                            \
   }                                                                           \
-  type *sbslice_get_##postfix (sbslice_t *sbsl, size_t index)                 \
+  static type *sbslice_get_##postfix (sbslice_t *sbsl, size_t index)          \
   {                                                                           \
     type *retdat = __sbslice_get_f (sbsl, index);                             \
                                                                               \
@@ -182,7 +182,8 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
                                                                               \
     return retdat;                                                            \
   }                                                                           \
-  type *sbslice_set_##postfix (sbslice_t *sbsl, size_t index, type data)      \
+  static type *sbslice_set_##postfix (sbslice_t *sbsl, size_t index,          \
+                                      type data)                              \
   {                                                                           \
     type *retdat = __sbslice_get_f (sbsl, index);                             \
                                                                               \
@@ -193,7 +194,7 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
                                                                               \
     return retdat;                                                            \
   }                                                                           \
-  bool sbv_fill_##postfix (sbvector_t *sbv, type data, size_t num)            \
+  static bool sbv_fill_##postfix (sbvector_t *sbv, type data, size_t num)     \
   {                                                                           \
     return __sbv_fill_f (sbv, &data, num);                                    \
   }
