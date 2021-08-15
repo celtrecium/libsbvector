@@ -123,18 +123,6 @@ sbv_free (sbvector_t *sbv)
   return true;
 }
 
-void *
-__sbv_set_f (sbvector_t *sbv, size_t index)
-{
-  if (!sbv)
-    return NULL;
-
-  if (index > sbv->length)
-    sbv_resize (sbv, index);
-
-  return _get_element (sbv->vector, sbv->_type_size, index);
-}
-
 bool
 sbv_pop (sbvector_t *sbv)
 {
@@ -150,9 +138,6 @@ sbv_pop (sbvector_t *sbv)
 void *
 __sbv_get_f (sbvector_t *sbv, size_t index)
 {
-  if (!sbv || sbv->length <= index)
-    return NULL;
-
   return _get_element (sbv->vector, sbv->_type_size, index);
 }
 

@@ -1,8 +1,6 @@
 #include <sbvector.h>
 #include <stdio.h>
 
-sbv_define_type (int, int)
-
 int
 main (void)
 {
@@ -16,13 +14,13 @@ main (void)
   fputs ("Vector:\n", stdout);
   
   for (i = 0; i < vect.length; ++i)
-    printf ("%d ", *sbv_get_int (&vect, i));
+    printf ("%d ", *sbv_get (&vect, int, i));
 
   /* Print numbers from slice of vector */
   fputs ("\nVector[2:5]:\n", stdout);
 
   for (i = 0; i < slice.length; ++i)
-    printf ("%d ", *sbslice_get_int (&slice, i));
+    printf ("%d ", *sbslice_get (&slice, int, i));
 
   putchar ('\n');
 

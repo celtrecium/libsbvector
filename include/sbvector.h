@@ -89,11 +89,6 @@ SBVECT_API bool sbv_clear (sbvector_t *sbv);
 /* Internal function for getting a void pointer to an element by index. */
 SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 
-/* Internal function to get a void pointer to the element at index to assign a
- * value. If the index exceeds the size of the vector, it will expand.
- */
-SBVECT_API void *__sbv_set_f (sbvector_t *sbv, size_t index);
-
 /* Set new vector size */
 SBVECT_API bool sbv_resize (sbvector_t *sbv, size_t new_size);
 
@@ -129,74 +124,18 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
 
 /* --------------------------------- Macros -------------------------------- */
 
-/* These are unsafe, generic macros. */
-#define sbv_get(sbv, type, index) (*((type *)__sbv_get_f (sbv, index)))
+/* These are generic macros. */
+#define sbv_get(sbv, type, index) ((type *)__sbv_get_f (sbv, index))
 #define sbv_set(sbv, type, index, data)                                       \
-  (*((type *)__sbv_set_f (sbv, index)) = data)
-#define sbv_push(sbv, type, data) sbv_set (sbv, type, (sbv)->length + 1, data)
+  (index < (sbv)->length ? (*((type *)__sbv_get_f (sbv, index)) = (data))     \
+                         : (data))
+#define sbv_push(sbv, type, data)                                             \
+  (sbv_resize (sbv, (sbv)->length + 1)                                        \
+       ? sbv_set (sbv, type, (sbv)->length - 1, (data))                           \
+       : (data))
 #define sbslice_get(sbsl, type, index)                                        \
-  (*((type *)__sbslice_get_f (sbsl, index)))
+  ((type *)__sbslice_get_f (sbsl, index))
 #define sbslice_set(sbsl, type, index, data)                                  \
-  (sbslice_get (sbsl, type, index) = data)
-
-/* This macro creates functions for working with a vector and a certain data
- * type. It is safe to use. */
-#define sbv_define_type(type, postfix)                                        \
-  static type *sbv_push_##postfix (sbvector_t *sbv, type data)                \
-  {                                                                           \
-    type *retdat = __sbv_set_f (sbv, sbv->length + 1);                        \
-                                                                              \
-    if (!retdat)                                                              \
-      return NULL;                                                            \
-                                                                              \
-    *retdat = data;                                                           \
-                                                                              \
-    return retdat;                                                            \
-  }                                                                           \
-  static type *sbv_get_##postfix (sbvector_t *sbv, size_t index)              \
-  {                                                                           \
-    type *retdat = __sbv_get_f (sbv, index);                                  \
-                                                                              \
-    if (!retdat)                                                              \
-      return NULL;                                                            \
-                                                                              \
-    return retdat;                                                            \
-  }                                                                           \
-  static type *sbv_set_##postfix (sbvector_t *sbv, size_t index, type data)   \
-  {                                                                           \
-    type *retdat = __sbv_set_f (sbv, index);                                  \
-                                                                              \
-    if (!retdat)                                                              \
-      return NULL;                                                            \
-                                                                              \
-    *retdat = data;                                                           \
-                                                                              \
-    return retdat;                                                            \
-  }                                                                           \
-  static type *sbslice_get_##postfix (sbslice_t *sbsl, size_t index)          \
-  {                                                                           \
-    type *retdat = __sbslice_get_f (sbsl, index);                             \
-                                                                              \
-    if (!retdat)                                                              \
-      return NULL;                                                            \
-                                                                              \
-    return retdat;                                                            \
-  }                                                                           \
-  static type *sbslice_set_##postfix (sbslice_t *sbsl, size_t index,          \
-                                      type data)                              \
-  {                                                                           \
-    type *retdat = __sbslice_get_f (sbsl, index);                             \
-                                                                              \
-    if (!retdat)                                                              \
-      return NULL;                                                            \
-                                                                              \
-    *retdat = data;                                                           \
-                                                                              \
-    return retdat;                                                            \
-  }                                                                           \
-  static bool sbv_fill_##postfix (sbvector_t *sbv, type data, size_t num)     \
-  {                                                                           \
-    return __sbv_fill_f (sbv, &data, num);                                    \
-  }
+  (sbsl->length > index ? sbslice_get ((sbsl, type, index) = (data)) : 0)
 
 #endif /* SBVECTOR_H */
