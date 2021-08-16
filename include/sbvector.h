@@ -106,8 +106,7 @@ SBVECT_API bool sbv_crop_capacity (sbvector_t *sbv);
  */
 SBVECT_API bool sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size);
 
-/* Internal function for filling vector value specify num times.
- * Macro for this function is available only in safe macros.
+/* Function for filling vector value specify num times.
  */
 SBVECT_API bool sbv_fill (sbvector_t *sbv, void *data, size_t num);
 
