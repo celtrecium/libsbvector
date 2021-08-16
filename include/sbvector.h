@@ -109,7 +109,7 @@ SBVECT_API bool sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size);
 /* Internal function for filling vector value specify num times.
  * Macro for this function is available only in safe macros.
  */
-SBVECT_API bool __sbv_fill_f (sbvector_t *sbv, void *data, size_t num);
+SBVECT_API bool sbv_fill (sbvector_t *sbv, void *data, size_t num);
 
 /* -------------------------- Slice interfaces ----------------------------- */
 
