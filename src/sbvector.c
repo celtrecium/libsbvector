@@ -208,17 +208,17 @@ sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size)
 }
 
 bool
-sbv_fill (sbvector_t *sbv, void *data, size_t num)
+sbv_fill (sbvector_t *sbv, void *value, size_t n)
 {
   size_t i;
   char *ptr = NULL;
 
-  if (!sbv || !data || num > sbv->length)
+  if (!sbv || !value || n > sbv->length)
     return false;
 
-  for (i = 0; i < num; ++i)
+  for (i = 0; i < n; ++i)
     {
-      memcpy (sbv->vector, data, sbv->_type_size);
+      memcpy (sbv->vector, value, sbv->_type_size);
       ptr += sbv->_type_size;
     }
   
