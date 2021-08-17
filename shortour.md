@@ -112,6 +112,12 @@ bool sbv_copy (sbvector_t *dest, sbvector_t *src);
 
 // Обрезает размер ёмкости вектора до минимально возможного. 
 bool sbv_crop_capacity (sbvector_t *sbv);
+
+// Установление размера вектора. 
+bool sbv_resize (sbvector_t *sbv, size_t new_size);
+
+// Установление размера выделяемого блока памяти.
+bool sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size);
 ```
 
 <br>
