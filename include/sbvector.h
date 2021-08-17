@@ -106,9 +106,9 @@ SBVECT_API bool sbv_crop_capacity (sbvector_t *sbv);
  */
 SBVECT_API bool sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size);
 
-/* Function for filling vector value specify num times.
+/* Function for filling vector value specify n times.
  */
-SBVECT_API bool sbv_fill (sbvector_t *sbv, void *data, size_t num);
+SBVECT_API bool sbv_fill (sbvector_t *sbv, void *value, size_t n);
 
 /* -------------------------- Slice interfaces ----------------------------- */
 
