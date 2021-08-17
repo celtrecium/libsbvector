@@ -208,7 +208,7 @@ sbv_set_blocksize (sbvector_t *sbv, size_t new_block_size)
 }
 
 bool
-__sbv_fill_f (sbvector_t *sbv, void *data, size_t num)
+sbv_fill (sbvector_t *sbv, void *data, size_t num)
 {
   size_t i;
   char *ptr = NULL;
