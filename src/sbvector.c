@@ -216,9 +216,11 @@ sbv_fill (sbvector_t *sbv, void *value, size_t n)
   if (!sbv || !value || n > sbv->length)
     return false;
 
+  ptr = sbv->vector;
+  
   for (i = 0; i < n; ++i)
     {
-      memcpy (sbv->vector, value, sbv->_type_size);
+      memcpy (ptr, value, sbv->_type_size);
       ptr += sbv->_type_size;
     }
   
