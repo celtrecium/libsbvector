@@ -91,20 +91,29 @@ sbvector_from_array (const void *array, size_t array_size, size_t type_size)
 }
 
 bool
-sbv_resize (sbvector_t *sbv, size_t new_size)
+sbv_reserve (sbvector_t *sbv, size_t size)
 {
   if (!sbv)
     return false;
 
-  if (sbv->_capacity < new_size)
+  if (sbv->_capacity < size)
     {
-      sbv->_capacity = !new_size ? sbv->_block_size
-                                : _get_size (new_size, sbv->_block_size);
-      
+      sbv->_capacity
+          = !size ? sbv->_block_size : _get_size (size, sbv->_block_size);
+
       if (!_realloc_s (&sbv->vector, sbv->_capacity * sbv->_type_size))
         return false;
     }
-  
+
+  return true;
+}
+
+bool
+sbv_resize (sbvector_t *sbv, size_t new_size)
+{
+  if (!sbv_reserve (sbv, new_size))
+    return false;
+
   sbv->length = new_size;
 
   return true;

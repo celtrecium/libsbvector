@@ -89,6 +89,9 @@ SBVECT_API bool sbv_clear (sbvector_t *sbv);
 /* Internal function for getting a void pointer to an element by index. */
 SBVECT_API void *__sbv_get_f (sbvector_t *sbv, size_t index);
 
+/* Reserves capacity in a vector without changing its length */
+SBVECT_API bool sbv_reserve (sbvector_t *sbv, size_t size);
+
 /* Set new vector size */
 SBVECT_API bool sbv_resize (sbvector_t *sbv, size_t new_size);
 
