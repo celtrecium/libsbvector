@@ -24,15 +24,16 @@
 static inline size_t
 _get_size (size_t size, size_t block)
 {
-  return (size / block + (size % block ? 1 : 0)) * block;
+  return (size / block + !!(size % block)) * block;
 }
 
 static inline void
 _swap_size_t (size_t *x, size_t *y)
 {
-  *x ^= *y;
-  *y ^= *x;
-  *x ^= *y;
+  size_t tmp = *x;
+
+  *x = *y;
+  *y = tmp;
 }
 
 static inline void *
@@ -119,26 +120,32 @@ sbv_free (sbvector_t *sbv)
   
   if (sbv->vector)
     free (sbv->vector);
+
+  sbv->_capacity = 0;
+  sbv->_type_size = 0;
+  sbv->_block_size = 0;
+  sbv->vector = NULL;
   
   return true;
 }
 
-bool
-sbv_pop (sbvector_t *sbv)
+void *
+__sbv_pop_f (sbvector_t *sbv)
 {
   if (!sbv || !sbv->length)
-    return false;
+    return NULL;
 
-  if (!sbv_resize (sbv, sbv->length - 1))
-    return false;
+  --sbv->length;
 
-  return true;
+  return _get_element (sbv->vector, sbv->_type_size, sbv->length);
 }
 
 void *
 __sbv_get_f (sbvector_t *sbv, size_t index)
 {
-  return _get_element (sbv->vector, sbv->_type_size, index);
+  return sbv && sbv->length
+             ? _get_element (sbv->vector, sbv->_type_size, index % sbv->length)
+             : NULL;
 }
 
 bool
@@ -176,7 +183,7 @@ sbv_crop_capacity (sbvector_t *sbv)
 
   if (tmpsz != sbv->_capacity)
     {
-      if (!_realloc_s(&sbv->vector, tmpsz * sbv->_type_size))
+      if (!_realloc_s (&sbv->vector, tmpsz * sbv->_type_size))
         return false;
 
       sbv->_capacity = tmpsz;
@@ -254,7 +261,8 @@ __sbslice_get_f (sbslice_t *sbsl, size_t index)
   if (!sbsl || sbsl->length <= index)
     return NULL;
 
-  return _get_element (sbsl->slice, sbsl->vector->_type_size, index);
+  return _get_element (sbsl->slice, sbsl->vector->_type_size,
+                       index % sbsl->length);
 }
 
 sbvector_t

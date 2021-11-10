@@ -22,6 +22,14 @@ main (void)
   for (i = 0; i < slice.length; ++i)
     printf ("%d ", *sbslice_get (&slice, int, i));
 
+  /* Pop element from vector */
+  printf ("\nPop element: %d\n", *sbv_pop (&vect, int));
+
+  fputs ("Vector:\n", stdout);
+  
+  for (i = 0; i < vect.length; ++i)
+    printf ("%d ", *sbv_get (&vect, int, i));
+
   putchar ('\n');
 
   sbv_free (&vect);

@@ -41,7 +41,7 @@
 # define SBVECT_API
 #endif /* _WIN32 || __CYGWIN__ */
 
-#define SBV_DEFAULT_BLOCKSZ 20
+#define SBV_DEFAULT_BLOCKSZ 32
 
 typedef struct sbvector
 {
@@ -78,7 +78,7 @@ SBVECT_API bool sbv_free (sbvector_t *sbv);
  * Attention: if the element contains a pointer to the allocated memory, you
  * need to free it yourself.
  */
-SBVECT_API bool sbv_pop (sbvector_t *sbv);
+SBVECT_API void *__sbv_pop_f (sbvector_t *sbv);
 
 /* Clear vector.
  * Attention: if the vector contains pointers to the allocated memory, you need
@@ -130,11 +130,12 @@ SBVECT_API sbvector_t sbv_copy_slice (sbslice_t *sbsl);
                          : (data))
 #define sbv_push(sbv, type, data)                                             \
   (sbv_resize (sbv, (sbv)->length + 1)                                        \
-       ? sbv_set (sbv, type, (sbv)->length - 1, (data))                           \
+       ? sbv_set (sbv, type, (sbv)->length - 1, (data))                       \
        : (data))
 #define sbslice_get(sbsl, type, index)                                        \
   ((type *)__sbslice_get_f (sbsl, index))
-#define sbslice_set(sbsl, type, index, data)                                  \
-  (sbsl->length > index ? sbslice_get ((sbsl, type, index) = (data)) : 0)
+#define sbslice_set(sbsl, type, index, data)                                   \
+  (sbsl->length > index ? sbslice_get((sbsl, type, index) = (data)) : 0)
+#define sbv_pop(sbv, type) ((type*)__sbv_pop_f (sbv))
 
 #endif /* SBVECTOR_H */

@@ -39,7 +39,7 @@ typedef struct sbvector
 // sbvector_t sbvector (size_t typesize)
 sbvector_t vect = sbvector(sizeof(int)); 
 ```
-Дефолнтный размер блока из коробки составляет [20 элементов указанного типа](https://github.com/celtrecium/libsbvector/blob/3f967555b25eaf664f41caa8c7ea96196435de3a/include/sbvector.h#L44). А длина устанавливается, конечно, на ноль. 
+Дефолнтный размер блока из коробки составляет [32 элементов указанного типа](https://github.com/celtrecium/libsbvector/blob/3f967555b25eaf664f41caa8c7ea96196435de3a/include/sbvector.h#L44). А длина устанавливается, конечно, на ноль. 
 
 Также для создания вектора можно использовать массив.
 ```c
@@ -74,7 +74,7 @@ sbv_set(&vect, int, 0, 0); // vect[0] = 0
 // sbv_push(sbv, type, data)
 sbv_push(&vect, int, 8);
 // bool sbv_pop (sbvector_t *sbv);
-bool ok = sbv_pop(&vect);
+sbv_pop(&vect, int);
 ```
 Стоит обратить внимание, что при использовании `sbv_pop` память следует освобождать в ручном режиме, если это, конечно, требуется.
 
