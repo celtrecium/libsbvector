@@ -18,5 +18,5 @@ file(GLOB
 
 add_library(${PROJECT_NAME} SHARED ${SRCS})
 
-install(TARGETS ${PROJECT_NAME} DESTINATION /lib)
-install(FILES include/sbvector.h DESTINATION /usr/include/)
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(FILES include/sbvector.h DESTINATION include)
